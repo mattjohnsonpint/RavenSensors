@@ -18,8 +18,9 @@ namespace RavenSensors.Indexes
                                              Timestamp = roundedTime,
                                              MinValue = reading.Value,
                                              MaxValue = reading.Value,
-                                             AverageValue = reading.Value,
-                                             Count = 1
+                                             TotalValue = reading.Value,
+                                             Count = 1,
+                                             AverageValue = 0
                                          };
 
             Map = new PeriodUpdateVistor(period).VisitAndConvert(Map, "AbstractReadingStatsIndex");
@@ -27,13 +28,18 @@ namespace RavenSensors.Indexes
             Reduce = results => from result in results
                                 group result by new { result.SensorId, result.Timestamp }
                                 into g
+                                let min = g.Min(x => x.MinValue)
+                                let max = g.Max(x => x.MaxValue)
+                                let total = g.Sum(x => x.TotalValue)
+                                let count = g.Sum(x => x.Count)
                                 select new {
                                                g.Key.SensorId,
                                                g.Key.Timestamp,
-                                               MinValue = g.Min(x => x.MinValue),
-                                               MaxValue = g.Max(x => x.MaxValue),
-                                               AverageValue = g.Average(x => x.AverageValue),
-                                               Count = g.Sum(x => x.Count)
+                                               MinValue = min,
+                                               MaxValue = max,
+                                               TotalValue = total,
+                                               Count = count,
+                                               AverageValue = total / count,
                                            };
         }
 
@@ -65,7 +71,8 @@ namespace RavenSensors.Indexes
         public DateTime Timestamp { get; set; }
         public double MinValue { get; set; }
         public double MaxValue { get; set; }
-        public double AverageValue { get; set; }
+        public double TotalValue { get; set; }
         public int Count { get; set; }
+        public double AverageValue { get; set; }
     }
 }
