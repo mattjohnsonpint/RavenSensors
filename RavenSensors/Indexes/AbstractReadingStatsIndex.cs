@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using Raven.Abstractions.Indexing;
 using Raven.Client.Indexes;
 using RavenSensors.Entities;
 
@@ -41,6 +42,12 @@ namespace RavenSensors.Indexes
                                                Count = count,
                                                AverageValue = total / count,
                                            };
+
+            Sort(x => x.MinValue, SortOptions.Double);
+            Sort(x => x.MaxValue, SortOptions.Double);
+            Sort(x => x.TotalValue, SortOptions.Double);
+            Sort(x => x.Count, SortOptions.Int);
+            Sort(x => x.AverageValue, SortOptions.Double);
         }
 
         /// <summary>
